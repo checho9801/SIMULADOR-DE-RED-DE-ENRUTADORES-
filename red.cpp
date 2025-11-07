@@ -30,7 +30,7 @@ bool red::validarConexion(const string& origen, const string& destino) const {
 
 void red::modificaciones(string nuevo, string listo, int costo, int opcion){
     if(costo < 0) return;
-    
+
     map<string,int> temporal;
     for(itOut = conexiones.begin(); itOut != conexiones.end(); itOut++){
         if(itOut->first == listo){
@@ -55,7 +55,7 @@ bool red::agregarEnrutador(string _nuevo, string _listo, int _costo){
     if(_nuevo.empty() || _listo.empty() || _costo < 0) {
         return false;
     }
-    
+
     singleMap[_listo] = _costo;
     modificaciones(_nuevo, _listo, _costo, 1);
     return true;
@@ -65,7 +65,7 @@ bool red::eliminarEnrutador(string _eliminar){
     if(_eliminar.empty() || !validarEnrutador(_eliminar)) {
         return false;
     }
-    
+
     conexiones.erase(_eliminar);
     map<string,int> temporal;
     for(itOut = conexiones.begin(); itOut != conexiones.end(); itOut++){
@@ -80,11 +80,11 @@ bool red::modificarCosto(string _nuevo, string _listo, int _costo){
     if(_nuevo.empty() || _listo.empty() || _costo < 0) {
         return false;
     }
-    
+
     if(!validarEnrutador(_nuevo)) {
         return false;
     }
-    
+
     singleMap = conexiones[_nuevo];
     singleMap[_listo] = _costo;
     modificaciones(_nuevo, _listo, _costo, 2);
@@ -96,13 +96,13 @@ void red::calcularRuta(string origen, string destino){
         cout << "Error: Uno o ambos enrutadores no existen en la red." << endl;
         return;
     }
-    
+
     if(origen == destino) {
         cout << "Origen y destino son el mismo enrutador: " << origen << endl;
         cout << "Costo: 0" << endl;
         return;
     }
-    
+
     vector<int> calculador, mejor, visitados, recorridoDef;
     vector<int>::iterator itV;
     int temp = 0;
@@ -111,13 +111,13 @@ void red::calcularRuta(string origen, string destino){
     char pasoCh1 = pasoStr1[0], pasoCh2;
     int pasoInt1 = pasoCh1, pasoInt2 = 0;
     visitados.push_back(pasoInt1);
-    
+
     while(true){
         if(conexiones.find(pasoStr1) == conexiones.end()) {
             cout << "Error: El enrutador " << pasoStr1 << " no tiene conexiones." << endl;
             return;
         }
-        
+
         singleMap = conexiones[pasoStr1];
         for(itIn = singleMap.begin(); itIn != singleMap.end(); itIn++){
             calculador.push_back((-1 * itIn->second) + temp);
@@ -129,18 +129,18 @@ void red::calcularRuta(string origen, string destino){
             mejorCamino.push(calculador);
             calculador.clear();
         }
-        
+
         if(mejorCamino.empty()) {
             cout << "No existe ruta entre " << origen << " y " << destino << endl;
             return;
         }
-        
+
         while(true){
             if(mejorCamino.empty()) {
                 cout << "No existe ruta entre " << origen << " y " << destino << endl;
                 return;
             }
-            
+
             unsigned long long int contador = 0;
             mejor = mejorCamino.top();
             for(itV = visitados.begin(); itV != visitados.end(); itV++){
@@ -155,13 +155,13 @@ void red::calcularRuta(string origen, string destino){
         pasoCh1 = pasoInt1;
         pasoStr1 = pasoCh1;
         visitados.push_back(pasoInt1);
-        
+
         bool parteRecorrido = true;
         for(unsigned long long int i = 0; i < recorridoDef.size(); i++){
             if(mejor[1] == recorridoDef[i]) parteRecorrido = false;
         }
         if(parteRecorrido == true) recorridoDef.push_back(mejor[1]);
-        
+
         if(pasoStr1 == destino){
             cout << "Ruta optima desde " << origen << " hasta " << destino << ":" << endl;
             cout << origen;
@@ -182,7 +182,7 @@ void red::mostrarRed() const {
         cout << "La red esta vacia." << endl;
         return;
     }
-    
+
     cout << "Estado actual de la red:" << endl;
     cout << "========================" << endl;
     for(auto it = conexiones.begin(); it != conexiones.end(); it++) {

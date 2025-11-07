@@ -1,128 +1,166 @@
-#include <iostream>
-#include<red.h>
+#include "red.h"
+#include "enrutador.h"
+#include <limits>
+#include <cctype>
 
-using namespace std;
+// Función para limpiar el buffer de entrada
+void limpiar_buffer() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
 
-#define DOC "doc.txt"
+// Función para validar que sea un carácter válido
+bool validar_caracter(char c) {
+    return isalpha(c);
+}
 
-int main(){
-
-    red enrutadores;
-    bool trabajando=true;
-    while(trabajando==true){
-        cout<<"Menu"<<endl;
-        cout<<"Ingrese una de las siguientes opciones:"<<endl;
-        cout<<"1.Cargar red desde el txt"<<endl;
-        cout<<"2.Agregar enrutador"<<endl;
-        cout<<"3.Eliminar enrutador"<<endl;
-        cout<<"4.Modificar costo de enrutador"<<endl;
-        cout<<"5.Mostrar camino y costo  mas eficientes de un enrutador a otro"<<endl;
-        cout<<"0 para salir del programa"<<endl;
-        int opcion=0;
-        cin>>opcion;
-        system("CLS");
-        switch (opcion) {
-        case 1:{
-            ifstream leer;
-            try {
-                leer.open(DOC);
-                if(!leer.is_open()) throw '1';
-            }  catch (char c) {
-                if(c=='1') cout<<"Problema con la lectura del archivo"<<endl;
+// Función para leer un entero con validación
+int leer_entero(const string& mensaje, int min = INT_MIN, int max = INT_MAX) {
+    int valor;
+    while(true) {
+        cout << mensaje;
+        if(cin >> valor) {
+            if(valor >= min && valor <= max) {
+                limpiar_buffer();
+                return valor;
+            } else {
+                cout << "Error: El valor debe estar entre " << min << " y " << max << endl;
             }
-            string linea;
-            string parteLinea;
-            string nombreEnrutador;
-            string nodo, costoStr;
-            int costoInt;
-            int separador1=0;
-            int separador2=0;
-            while(getline(leer,linea)){
-                separador1=linea.find(":");
-                nombreEnrutador=linea.substr(0,separador1);
-                parteLinea=linea.substr(separador1+1);
-                separador1=parteLinea.find("-");
-                string numeroEnrutadores=parteLinea.substr(0,separador1);
-                int numeroIteraciones=atoi(numeroEnrutadores.c_str());
-                parteLinea=parteLinea.substr(separador1+1);
-                for(int i=0;i<numeroIteraciones;i++){
-                    separador1=parteLinea.find(":");
-                    nodo=parteLinea.substr(0,separador1);
-                    separador2=parteLinea.find(",");
-                    costoStr=parteLinea.substr(separador1+1,separador2-separador1-1);
-                    costoInt=atoi(costoStr.c_str());
-                    enrutadores.modificacion1(nodo,costoInt);
-                    parteLinea=parteLinea.substr(separador2+1);
-                }
-                enrutadores.modificacion2(nombreEnrutador);
-            }
-            leer.close();
-            cout<<"La red ha sido cargada con exito."<<endl;
-            system("PAUSE");
-            system("CLS");
-            break;
+        } else {
+            cout << "Error: Debe ingresar un numero valido" << endl;
+            limpiar_buffer();
         }
-        case 2:{
-            string nombre;
-            string conexion;
-            int conexiones;
-            int costo;
-            cout<<"Ingrese el nombre del nuevo enrutador: "; cin>>nombre;
-            cout<<"\n Indique el numero de conexiones que tendra: ";cin>>conexiones;
-            system("CLS");
-            for(int i=0;i<conexiones;i++){
-                cout<<"Indique a que enrutador estara conectado "<<nombre<< ": ";cin>>conexion;
-                cout<<"\n Indique el costo hacia "<<conexion<<": ";cin>>costo;
-                cout<<endl;
-                enrutadores.agregarEnrutador(nombre,conexion,costo);
-            }
-            enrutadores.modificacion2(nombre);
-            cout<<"Se ha agregado el nuevo enrutador"<<endl;
-            system("PAUSE");
-            system("CLS");
-            break;
-        }
-        case 3:{
-            string nombre;
-            cout<<"Escriba el nombre del enrutador que desea eliminar: ";cin>>nombre;
-            enrutadores.eliminarEnrutador(nombre);
-            cout<<"\n El enrutador se ha eliminado exitosamente..."<<endl;
-            system("PAUSE");
-            system("CLS");
-            break;
-        }
-        case 4:{
-            string a;
-            string b;
-            int costo;
-            cout<<"Indique el nombre de uno de los enrutadores: ";cin>>a;
-            cout<<"\n Indique el nombre del otro enrutador: ";cin>>b;
-            cout<<"\n Cual sera el valor del nuevo costo: ";cin>>costo;
-            system("CLS");
-            enrutadores.modificarCosto(a,b,costo);
-            enrutadores.modificacion2(a);
-            cout<<"El costo de la conexion se ha modificado con exito..."<<endl;
-            system("PAUSE");
-            system("CLS");
-            break;
-        }
-        case 5:{
-            string a;
-            string b;
-            cout<<"Indique el nombre del enrutador origen: ";cin>>a;
-            cout<<"\n Indique el nombre del enrutador destino: ";cin>>b;
-            system("CLS");
-            enrutadores.calcularRuta(a,b);
-            system("PAUSE");
-            system("CLS");
-            break;
-        }
-        default:{
-            trabajando=false;
-            break;
-        }
-        }
+    }
+}
 
+// Función para leer un carácter (nombre de enrutador) con validación
+char leer_enrutador(const string& mensaje) {
+    char nombre;
+    while(true) {
+        cout << mensaje;
+        if(cin >> nombre) {
+            if(validar_caracter(nombre)) {
+                limpiar_buffer();
+                return nombre;
+            } else {
+                cout << "Error: Debe ingresar una letra valida para el enrutador" << endl;
+                limpiar_buffer();
+            }
+        } else {
+            cout << "Error: Entrada invalida" << endl;
+            limpiar_buffer();
+        }
+    }
+}
+
+int main()
+{
+    red net;
+    char nombre, nombre1;
+    int costo, n;
+
+    while(true){
+        cout << "\n\t=== Menu Principal ===" << endl;
+        cout << "1) Agregar enrutador" << endl;
+        cout << "2) Eliminar enrutador" << endl;
+        cout << "3) Ver enrutador" << endl;
+        cout << "4) Ver tabla" << endl;
+        cout << "5) Ver ruta y costo" << endl;
+        cout << "6) Cargar una red" << endl;
+        cout << "7) Cambiar costo" << endl;
+        cout << "8) Enlaces (eliminar o agregar)" << endl;
+        cout << "9) Salir" << endl << endl;
+
+        short option = leer_entero("Seleccione una opcion: ", 1, 9);
+
+        switch (option) {
+        case 1:
+            nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
+            net.agregar_enrutador(nombre);
+            break;
+
+        case 2:
+            nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
+            net.eliminar_enrutador(nombre);
+            break;
+
+        case 3:
+            nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
+            net.ver_enrutador(nombre);
+            break;
+
+        case 4:
+            if(net.esta_vacia()) {
+                cout << "\nAVISO: No hay enrutadores ni rutas cargadas en la red." << endl;
+                cout << "Por favor, agregue enrutadores o cargue una red primero." << endl;
+            } else {
+                net.ver_tabla();
+            }
+            break;
+
+        case 5:
+            nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+            nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+            net.buscar_ruta(nombre, nombre1);
+            break;
+
+        case 6:
+            cout << "\n1) Red aleatoria" << endl;
+            cout << "2) Desde un archivo" << endl;
+            option = leer_entero("Seleccione una opcion: ", 1, 2);
+
+            switch (option) {
+            case 1:
+                n = leer_entero("Ingrese cantidad de enrutadores [2,25]: ", 2, 25);
+                net.red_aleatoria(n);
+                break;
+            case 2:
+                net.leer_archivo();
+                break;
+            }
+            break;
+
+        case 7:
+            nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+            nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+            costo = leer_entero("Ingrese el nuevo costo: ", 1, 1000);
+            if(net.agregar_enlace(nombre, nombre1, costo))
+                cout << "Se ha cambiado el costo exitosamente" << endl;
+            else
+                cout << "Error: No se pudo cambiar el costo" << endl;
+            break;
+
+        case 8:
+            cout << "\n1) Agregar enlace" << endl;
+            cout << "2) Eliminar enlace" << endl;
+            option = leer_entero("Seleccione una opcion: ", 1, 2);
+
+            switch (option) {
+            case 1:
+                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                costo = leer_entero("Ingrese el costo: ", 1, 1000);
+                if(net.agregar_enlace(nombre, nombre1, costo))
+                    cout << "Se ha realizado el enlace exitosamente" << endl;
+                else
+                    cout << "Error: No se pudo realizar el enlace" << endl;
+                break;
+            case 2:
+                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                net.eliminar_enlace(nombre, nombre1);
+                break;
+            }
+            break;
+
+        case 9:
+            cout << "\nSaliendo del programa..." << endl;
+            return 0;
+
+        default:
+            cout << "Opcion invalida" << endl;
+            break;
+        }
     }
     return 0;
 }

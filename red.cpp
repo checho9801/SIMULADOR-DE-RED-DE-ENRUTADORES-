@@ -1,209 +1,210 @@
 #include "red.h"
 
-red::red()
+void red::agregar_enrutador(char nombre)
 {
-
-}
-
-void red::modificacion1(string clave, int valor){
-    if(valor >= 0) {
-        singleMap[clave] = valor;
-    }
-}
-
-void red::modificacion2(string clave2){
-    if(!clave2.empty()) {
-        conexiones[clave2] = singleMap;
-        singleMap.clear();
-    }
-}
-
-bool red::validarEnrutador(const string& nombre) const {
-    return !nombre.empty() && conexiones.find(nombre) != conexiones.end();
-}
-
-bool red::validarConexion(const string& origen, const string& destino) const {
-    if(!validarEnrutador(origen)) return false;
-    auto it = conexiones.find(origen);
-    return it->second.find(destino) != it->second.end();
-}
-
-void red::modificaciones(string nuevo, string listo, int costo, int opcion){
-    if(costo < 0) return;
-
-    map<string,int> temporal;
-    for(itOut = conexiones.begin(); itOut != conexiones.end(); itOut++){
-        if(itOut->first == listo){
-            temporal = itOut->second;
-            switch (opcion) {
-            case 1:{
-                temporal.insert(pair<string,int>(nuevo, costo));
-                break;
-            }
-            case 2:{
-                temporal[nuevo] = costo;
-                break;
-            }
-            }
-            conexiones[listo] = temporal;
-            break;
-        }
-    }
-}
-
-bool red::agregarEnrutador(string _nuevo, string _listo, int _costo){
-    if(_nuevo.empty() || _listo.empty() || _costo < 0) {
-        return false;
-    }
-
-    singleMap[_listo] = _costo;
-    modificaciones(_nuevo, _listo, _costo, 1);
-    return true;
-}
-
-bool red::eliminarEnrutador(string _eliminar){
-    if(_eliminar.empty() || !validarEnrutador(_eliminar)) {
-        return false;
-    }
-
-    conexiones.erase(_eliminar);
-    map<string,int> temporal;
-    for(itOut = conexiones.begin(); itOut != conexiones.end(); itOut++){
-        temporal = itOut->second;
-        temporal.erase(_eliminar);
-        conexiones[itOut->first] = temporal;
-    }
-    return true;
-}
-
-bool red::modificarCosto(string _nuevo, string _listo, int _costo){
-    if(_nuevo.empty() || _listo.empty() || _costo < 0) {
-        return false;
-    }
-
-    if(!validarEnrutador(_nuevo)) {
-        return false;
-    }
-
-    singleMap = conexiones[_nuevo];
-    singleMap[_listo] = _costo;
-    modificaciones(_nuevo, _listo, _costo, 2);
-    return true;
-}
-
-void red::calcularRuta(string origen, string destino){
-    if(!validarEnrutador(origen) || !validarEnrutador(destino)) {
-        cout << "Error: Uno o ambos enrutadores no existen en la red." << endl;
-        return;
-    }
-
-    if(origen == destino) {
-        cout << "Origen y destino son el mismo enrutador: " << origen << endl;
-        cout << "Costo: 0" << endl;
-        return;
-    }
-
-    vector<int> calculador, mejor, visitados, recorridoDef;
-    vector<int>::iterator itV;
-    int temp = 0;
-    priority_queue<vector<int>> mejorCamino;
-    string pasoStr1 = origen, pasoStr2;
-    char pasoCh1 = pasoStr1[0], pasoCh2;
-    int pasoInt1 = pasoCh1, pasoInt2 = 0;
-    visitados.push_back(pasoInt1);
-
-    while(true){
-        if(conexiones.find(pasoStr1) == conexiones.end()) {
-            cout << "Error: El enrutador " << pasoStr1 << " no tiene conexiones." << endl;
-            return;
+    enrutador router;
+    router.agregar_enlace(nombre,0);
+    if(redes.find(nombre)==redes.end()){
+        for(i=redes.begin();i!=redes.end();i++){
+            i->second.agregar_enlace(nombre,-1);
+            router.agregar_enlace(i->first,-1);
         }
 
-        singleMap = conexiones[pasoStr1];
-        for(itIn = singleMap.begin(); itIn != singleMap.end(); itIn++){
-            calculador.push_back((-1 * itIn->second) + temp);
-            calculador.push_back(pasoInt1);
-            pasoStr2 = itIn->first;
-            pasoCh2 = pasoStr2[0];
-            pasoInt2 = pasoCh2;
-            calculador.push_back(pasoInt2);
-            mejorCamino.push(calculador);
-            calculador.clear();
+        redes.insert(pair<char,enrutador>(nombre,router));
+    }else cout << "El enrutador ya existe"<<endl;
+}
+
+void red::eliminar_enrutador(char nombre)
+{
+    if(redes.find(nombre)!=redes.end()){
+        redes.erase(nombre);
+        for(i=redes.begin();i!=redes.end();i++){
+            i->second.eliminar_enlace(nombre);
+        }
+        cout<<"El enrutador se ha eliminado"<<endl;
+    }else cout << "El enrutador no existe"<<endl;
+}
+
+void red::ver_enrutador(char nombre)
+{
+    if(redes.find(nombre)!=redes.end()){
+        redes[nombre].print_enrutador();
+    }else cout<<"El enrutador no existe"<<endl;
+}
+
+void red::ver_tabla()
+{
+    for(i=redes.begin();i!=redes.end();i++){
+        cout<<"\nEnrutador "<<i->first<<":"<<endl;
+        i->second.print_enrutador();
+    }
+}
+
+bool red::agregar_enlace(char enrutador1, char enrutador2, int costo)
+{
+    bool p=false;
+    if(costo<=100 && costo>=1){
+        if(enrutador1!=enrutador2){
+            if(redes[enrutador1].modificar_enlace(enrutador2, costo) && redes[enrutador2].modificar_enlace(enrutador1, costo)){
+               p=true;
+            }else cout<<"Uno de los enrutadores no existe"<<endl;
+        }else cout<<"No se puede hacer un enlace con el mismo enrutador"<<endl;
+    }else cout<<"El costo debe estar entre 1 y 100"<<endl;
+    return p;
+}
+
+void red::eliminar_enlace(char enrutador1, char enrutador2)
+{
+    if(enrutador1!=enrutador2){
+        if(redes[enrutador1].modificar_enlace(enrutador2,-1) && redes[enrutador2].modificar_enlace(enrutador1,-1)){
+            cout<<"Se ha eliminado el enlace"<<endl;
+        }else cout<<"Uno de los enrutadores no existe"<<endl;
+    }else cout<<"No se puede eliminar el enlace"<<endl;
+}
+
+void red::buscar_ruta(char origen, char destino)
+{
+    //------------Algoritmo dijkstra-----------
+
+    if(redes.find(origen)!=redes.end() && redes.find(destino)!=redes.end()){
+        struct enlaces
+        {
+        public:
+            struct prueba{
+            public:
+                char anterior=' ';
+                int acumulado;
+            }temporal, permanente;
+        }d;
+        map<char,enlaces> camino;
+        map<char,enlaces>::iterator it;
+
+        d.temporal.acumulado=2147483647;
+        d.permanente.acumulado=-1;
+
+        for(i=redes.begin();i!=redes.end();i++){
+            camino.insert(pair<char,enlaces>(i->first,d));
         }
 
-        if(mejorCamino.empty()) {
-            cout << "No existe ruta entre " << origen << " y " << destino << endl;
-            return;
-        }
+        char permanente=origen;
+        camino[permanente].permanente.acumulado=0;
+        list<int> acomulados;
+
+        int menor_acomulado;
 
         while(true){
-            if(mejorCamino.empty()) {
-                cout << "No existe ruta entre " << origen << " y " << destino << endl;
-                return;
+            for(i =redes.begin();i!=redes.end();i++){
+                if(redes[permanente].ver_costo(i->first)!=-1 && redes[permanente].ver_costo(i->first)!=0){
+                    if(camino[i->first].permanente.acumulado==-1){
+                        if((camino[permanente].permanente.acumulado+redes[permanente].ver_costo(i->first))<(camino[i->first].temporal.acumulado)){
+                            camino[i->first].temporal.anterior=permanente;
+                            camino[i->first].temporal.acumulado=camino[permanente].permanente.acumulado+redes[permanente].ver_costo(i->first);
+                        }
+                    }
+
+                }
             }
-
-            unsigned long long int contador = 0;
-            mejor = mejorCamino.top();
-            for(itV = visitados.begin(); itV != visitados.end(); itV++){
-                if(mejor[2] != *itV) contador += 1;
+            acomulados.clear();
+            for(it=camino.begin();it!=camino.end();it++){
+                acomulados.push_back(it->second.temporal.acumulado);
             }
-            if(contador == visitados.size()) break;
-            else mejorCamino.pop();
-        }
-        mejorCamino.pop();
-        temp = mejor[0];
-        pasoInt1 = mejor[2];
-        pasoCh1 = pasoInt1;
-        pasoStr1 = pasoCh1;
-        visitados.push_back(pasoInt1);
-
-        bool parteRecorrido = true;
-        for(unsigned long long int i = 0; i < recorridoDef.size(); i++){
-            if(mejor[1] == recorridoDef[i]) parteRecorrido = false;
-        }
-        if(parteRecorrido == true) recorridoDef.push_back(mejor[1]);
-
-        if(pasoStr1 == destino){
-            cout << "Ruta optima desde " << origen << " hasta " << destino << ":" << endl;
-            cout << origen;
-            for(itV = recorridoDef.begin(); itV != recorridoDef.end(); itV++){
-                pasoCh1 = *itV;
-                pasoStr1 = pasoCh1;
-                cout << " -> " << pasoStr1;
+            acomulados.sort();
+            menor_acomulado=*acomulados.begin();
+            for(it=camino.begin();it!=camino.end();it++){
+                if(it->second.temporal.acumulado==menor_acomulado){
+                    it->second.permanente.acumulado=menor_acomulado;
+                    it->second.permanente.anterior=it->second.temporal.anterior;
+                    it->second.temporal.acumulado=2147483647;
+                    permanente=it->first;
+                    break;
+                }
             }
-            cout << " -> " << destino << endl;
-            cout << "Costo total: " << mejor[0] * -1 << endl;
-            break;
+            if(permanente==destino){
+                break;
+            }
         }
-    }
-}
-
-void red::mostrarRed() const {
-    if(conexiones.empty()) {
-        cout << "La red esta vacia." << endl;
-        return;
-    }
-
-    cout << "Estado actual de la red:" << endl;
-    cout << "========================" << endl;
-    for(auto it = conexiones.begin(); it != conexiones.end(); it++) {
-        cout << "Enrutador: " << it->first << endl;
-        cout << "Conexiones:" << endl;
-        for(auto conn = it->second.begin(); conn != it->second.end(); conn++) {
-            cout << "  -> " << conn->first << " (costo: " << conn->second << ")" << endl;
+        string ruta;
+        ruta.push_back(destino);
+        char nodo=destino;
+        it=camino.find(destino);
+        while(nodo!=origen){
+            nodo=it->second.permanente.anterior;
+            ruta.push_back('-');
+            ruta.push_back(nodo);
+            it=camino.find(nodo);
         }
-        cout << endl;
+        string r;
+        for(int i=ruta.length()-1;i>=0;i--){
+            r.push_back(ruta[i]);
+        }
+
+        cout<<"La ruata mas corta es:\n"<<r<<" con un costo de: "<<camino[destino].permanente.acumulado<<endl;
+
+    }else cout<<"Uno de los enrutadores no existe"<<endl;
+}
+
+void red::leer_archivo()
+{
+    redes.clear();
+    ifstream fileinput;
+    fileinput.open("red.txt",ios::in);
+    if(fileinput.fail()){
+        cout<<"No se pudo abrir el archivo, verifique que el archivo si exista"<<endl;
+        exit(1);//Si no se pudo abrir el archivo termina la ejecucion del programa
     }
+
+    string linea,costo;
+    char enrutador1, enrutador2;
+    while(!fileinput.eof()){   //Mientras no sea el final del archivo
+        getline(fileinput,linea);
+        enrutador1=linea[0];
+        enrutador2=linea[2];
+        for(unsigned int i=4;i<linea.length();i++){
+            costo.push_back(linea[i]);
+        }
+        if(redes.find(enrutador1)==redes.end()){
+            agregar_enrutador(enrutador1);
+        }
+        if(redes.find(enrutador2)==redes.end()){
+            agregar_enrutador(enrutador2);
+        }
+        agregar_enlace(enrutador1,enrutador2,atoi(costo.c_str()));
+        costo.clear();
+      }
+    fileinput.close();
+    cout<<"La red se ha cargado"<<endl;
 }
 
-void red::limpiarRed() {
-    conexiones.clear();
-    singleMap.clear();
+void red::red_aleatoria(int nodos)
+{
+    char enrutador='A';
+    if(nodos>=2 && nodos<=25){
+        redes.clear();
+        while(enrutador!='A'+nodos){
+            agregar_enrutador(enrutador);
+            enrutador+=1;
+        }
+        int al;
+        int al2;
+
+        srand(time(NULL));
+        for(i=redes.begin();i!=redes.end();i++){
+          do{
+               al2=rand()%nodos;
+               al2+=65;
+           } while(al2==i->first);
+           agregar_enlace(i->first,al2,1+rand()%(100));
+           for(it=redes.begin();it!=redes.end();it++){
+               al=rand()%5;
+               if(al==1 && i->first!=it->first){
+                   agregar_enlace(i->first,it->first,1+rand()%(101-1));
+               }
+           }
+       }
+       cout<<"La red se ha creado"<<endl;
+    }else cout<<"La cantidad de enrutadores no es valida"<<endl;
 }
 
-int red::obtenerNumeroEnrutadores() const {
-    return conexiones.size();
-}
-
-bool red::existeEnrutador(const string& nombre) const {
-    return conexiones.find(nombre) != conexiones.end();
+bool red::esta_vacia(){
+    return redes.empty();
 }

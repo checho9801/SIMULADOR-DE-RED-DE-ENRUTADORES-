@@ -1,41 +1,29 @@
 #ifndef RED_H
 #define RED_H
-#include<string.h>
-#include<iostream>
-#include<map>
-#include<vector>
-#include<queue>
-#include<fstream>
-#include<limits>
-#include<algorithm>
-#include <cstdlib>
-
-using namespace std;
+#include <enrutador.h>
+#include <list>
+#include <fstream>
+#include <string>
+#include <stdlib.h>
+#include<time.h>
 
 class red
 {
 private:
-    map<string,int> singleMap;
-    map<string,map<string,int>> conexiones;
-    map<string,int>::iterator itIn;
-    map<string,map<string,int>>::iterator itOut;
-
-    void modificaciones(string nuevo, string listo, int costo, int opcion);
-    bool validarEnrutador(const string& nombre) const;
-    bool validarConexion(const string& origen, const string& destino) const;
+    map<char,enrutador> redes;
+    map<char,enrutador>::iterator i, it;
 
 public:
-    red();
-    void modificacion1(string clave,int valor);
-    void modificacion2(string clave2);
-    bool agregarEnrutador(string _nuevo, string _listo, int _costo);
-    bool eliminarEnrutador(string _eliminar);
-    bool modificarCosto(string _nuevo, string _listo, int _costo);
-    void calcularRuta(string origen, string destino);
-    void mostrarRed() const;
-    void limpiarRed();
-    int obtenerNumeroEnrutadores() const;
-    bool existeEnrutador(const string& nombre) const;
+    void agregar_enrutador(char);
+    void eliminar_enrutador(char);
+    void ver_enrutador(char);
+    void ver_tabla();
+    bool esta_vacia();
+    bool agregar_enlace(char,char,int);
+    void eliminar_enlace(char,char);
+    void buscar_ruta(char,char);
+    void leer_archivo();
+    void red_aleatoria(int);
 };
 
 #endif // RED_H

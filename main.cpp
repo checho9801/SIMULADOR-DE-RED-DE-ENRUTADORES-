@@ -1,5 +1,4 @@
 #include "red.h"
-#include "enrutador.h"
 #include <limits>
 #include <cctype>
 
@@ -80,28 +79,40 @@ int main()
             break;
 
         case 2:
-            nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
-            net.eliminar_enrutador(nombre);
+            if(net.esta_vacia()) {
+                cout << "\nError: No hay enrutadores para eliminar" << endl;
+            } else {
+                nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
+                net.eliminar_enrutador(nombre);
+            }
             break;
 
         case 3:
-            nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
-            net.ver_enrutador(nombre);
+            if(net.esta_vacia()) {
+                cout << "\nError: No hay enrutadores para mostrar" << endl;
+            } else {
+                nombre = leer_enrutador("Ingrese el nombre del enrutador: ");
+                net.ver_enrutador(nombre);
+            }
             break;
 
         case 4:
             if(net.esta_vacia()) {
                 cout << "\nAVISO: No hay enrutadores ni rutas cargadas en la red." << endl;
-                cout << "Por favor, agregue enrutadores o cargue una red primero." << endl;
+                cout << "Por favor, agregue enrutadores o cargue una red primero (opciones 1 o 6)." << endl;
             } else {
                 net.ver_tabla();
             }
             break;
 
         case 5:
-            nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
-            nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
-            net.buscar_ruta(nombre, nombre1);
+            if(net.esta_vacia()) {
+                cout << "\nError: No hay enrutadores en la red" << endl;
+            } else {
+                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                net.buscar_ruta(nombre, nombre1);
+            }
             break;
 
         case 6:
@@ -121,35 +132,43 @@ int main()
             break;
 
         case 7:
-            nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
-            nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
-            costo = leer_entero("Ingrese el nuevo costo: ", 1, 1000);
-            if(net.agregar_enlace(nombre, nombre1, costo))
-                cout << "Se ha cambiado el costo exitosamente" << endl;
-            else
-                cout << "Error: No se pudo cambiar el costo" << endl;
+            if(net.esta_vacia()) {
+                cout << "\nError: No hay enrutadores en la red" << endl;
+            } else {
+                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                costo = leer_entero("Ingrese el nuevo costo: ", 1, 1000);
+                if(net.agregar_enlace(nombre, nombre1, costo))
+                    cout << "Se ha cambiado el costo exitosamente" << endl;
+                else
+                    cout << "Error: No se pudo cambiar el costo" << endl;
+            }
             break;
 
         case 8:
-            cout << "\n1) Agregar enlace" << endl;
-            cout << "2) Eliminar enlace" << endl;
-            option = leer_entero("Seleccione una opcion: ", 1, 2);
+            if(net.esta_vacia()) {
+                cout << "\nError: No hay enrutadores en la red" << endl;
+            } else {
+                cout << "\n1) Agregar enlace" << endl;
+                cout << "2) Eliminar enlace" << endl;
+                option = leer_entero("Seleccione una opcion: ", 1, 2);
 
-            switch (option) {
-            case 1:
-                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
-                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
-                costo = leer_entero("Ingrese el costo: ", 1, 1000);
-                if(net.agregar_enlace(nombre, nombre1, costo))
-                    cout << "Se ha realizado el enlace exitosamente" << endl;
-                else
-                    cout << "Error: No se pudo realizar el enlace" << endl;
-                break;
-            case 2:
-                nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
-                nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
-                net.eliminar_enlace(nombre, nombre1);
-                break;
+                switch (option) {
+                case 1:
+                    nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                    nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                    costo = leer_entero("Ingrese el costo: ", 1, 1000);
+                    if(net.agregar_enlace(nombre, nombre1, costo))
+                        cout << "Se ha realizado el enlace exitosamente" << endl;
+                    else
+                        cout << "Error: No se pudo realizar el enlace" << endl;
+                    break;
+                case 2:
+                    nombre = leer_enrutador("Ingrese el nombre del enrutador 1: ");
+                    nombre1 = leer_enrutador("Ingrese el nombre del enrutador 2: ");
+                    net.eliminar_enlace(nombre, nombre1);
+                    break;
+                }
             }
             break;
 
